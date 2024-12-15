@@ -39,7 +39,7 @@
     "new": {
       "base": 201000,
       "growth": [
-        { "salaryGrowth": 0, "bonusPercentage": 0 },
+        { "salaryGrowth": 0, "bonusPercentage": 4.795 },
         { "salaryGrowth": 3, "bonusPercentage": 10 },
         { "salaryGrowth": 10, "bonusPercentage": 10 },
         { "salaryGrowth": 3, "bonusPercentage": 10 }
