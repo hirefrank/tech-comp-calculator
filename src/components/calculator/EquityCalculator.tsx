@@ -1,25 +1,18 @@
+import React from 'react';
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../../components/ui/card';
+import { Input } from '../../components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../../components/ui/select';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs';
+import { Switch } from '../../components/ui/switch';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import defaultConfig from '../../config/defaults.json';
 
 interface EquityCalculatorProps {
   package: any; // TODO: Use proper type from PackageComparison
   onUpdate: (pkg: any) => void;
 }
-
-const DEFAULT_TAX_RATES = {
-  federal: 37,
-  state: 13,
-  amt: 28,
-  capitalGains: {
-    shortTerm: 37,
-    longTerm: 20
-  }
-};
+const { taxRates: DEFAULT_TAX_RATES } = defaultConfig;
 
 export default function EquityCalculator({ package: pkg, onUpdate }: EquityCalculatorProps) {
   const [taxRates, setTaxRates] = useState(DEFAULT_TAX_RATES);

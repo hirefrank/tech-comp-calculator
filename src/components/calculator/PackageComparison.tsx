@@ -1,82 +1,26 @@
+import React from 'react';
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../../components/ui/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs';
 import CompCalculator from './CompCalculator';
 import EquityCalculator from './EquityCalculator';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import defaultConfig from '../../config/defaults.json';
+import { Config } from '../../types/config';
+import { CompPackage } from '../../types/package';
 
-interface CompPackage {
-  base: number;
-  growth: {
-    salaryGrowth: number;
-    bonusPercentage: number;
-  }[];
-  equity: {
-    type: "RSU" | "ISO" | "NSO";
-    initialGrant: number;
-    strikePrice: number;
-    currentFMV: number;
-    shares: number;
-    vestingSchedule: number[];
-    refreshGrants: { year: number; amount: number; }[];
-    liquidityDiscount: number;
-    exitMultiple: number;
-  };
-  company: {
-    type: "public" | "private";
-    stage: string;
-    benefitsValue: number;
-  };
-}
-
-const INITIAL_PACKAGE: CompPackage = {
-  base: 150000,
-  growth: Array(4).fill({
-    salaryGrowth: 5,
-    bonusPercentage: 15,
-  }),
-  equity: {
-    type: "RSU",
-    initialGrant: 200000,
-    strikePrice: 0,
-    currentFMV: 0,
-    shares: 0,
-    vestingSchedule: [25, 25, 25, 25],
-    refreshGrants: [
-      { year: 2, amount: 50000 },
-      { year: 3, amount: 75000 },
-      { year: 4, amount: 100000 }
-    ],
-    liquidityDiscount: 0,
-    exitMultiple: 1,
-  },
-  company: {
-    type: "public",
-    stage: "public",
-    benefitsValue: 25000,
-  }
-};
+// Add type assertion
+const config = defaultConfig as Config;
 
 export default function PackageComparison() {
   const [currentPackage, setCurrentPackage] = useState<CompPackage>({
-    ...INITIAL_PACKAGE,
-    company: { ...INITIAL_PACKAGE.company, type: "public" }
+    ...config.packages.current,
+    company: { ...config.packages.current.company }
   });
 
   const [newPackage, setNewPackage] = useState<CompPackage>({
-    ...INITIAL_PACKAGE,
-    base: 180000,
-    company: { ...INITIAL_PACKAGE.company, type: "private" },
-    equity: {
-      ...INITIAL_PACKAGE.equity,
-      type: "ISO",
-      initialGrant: 300000,
-      strikePrice: 5,
-      currentFMV: 10,
-      shares: 30000,
-      liquidityDiscount: 30,
-      exitMultiple: 2,
-    }
+    ...config.packages.new,
+    company: { ...config.packages.new.company }
   });
 
   const calculateYearlyTotal = (pkg: CompPackage, year: number) => {
@@ -99,7 +43,7 @@ export default function PackageComparison() {
     let totalEquity = equityValue + refreshValue;
 
     // Apply private company adjustments
-    if (pkg.company.type === 'private') {
+    if (pkg.company.type === 'private' && pkg.equity.liquidityDiscount && pkg.equity.exitMultiple) {
       totalEquity *= (1 - pkg.equity.liquidityDiscount / 100);
       totalEquity *= pkg.equity.exitMultiple;
     }
@@ -125,9 +69,8 @@ export default function PackageComparison() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-0">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Package Comparison Calculator</h1>
 
         <Tabs defaultValue="current" className="space-y-8">
           <TabsList>

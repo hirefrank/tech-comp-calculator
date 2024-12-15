@@ -1,0 +1,62 @@
+{
+  "taxRates": {
+    "federal": 37,
+    "state": 13,
+    "amt": 28,
+    "capitalGains": {
+      "shortTerm": 37,
+      "longTerm": 20
+    }
+  },
+  "equity": {
+    "defaultVestingSchedule": [25, 50, 75, 100],
+    "defaultRefreshGrants": []
+  },
+  "company": {
+    "defaultLiquidityDiscount": 20,
+    "defaultExitMultiple": 1.0
+  },
+  "packages": {
+    "current": {
+      "base": 150000,
+      "growth": [
+        { "salaryGrowth": 3, "bonusPercentage": 10 },
+        { "salaryGrowth": 3, "bonusPercentage": 10 },
+        { "salaryGrowth": 3, "bonusPercentage": 10 },
+        { "salaryGrowth": 3, "bonusPercentage": 10 }
+      ],
+      "company": {
+        "type": "public"
+      },
+      "equity": {
+        "type": "RSU",
+        "initialGrant": 200000,
+        "vestingSchedule": [25, 50, 75, 100],
+        "refreshGrants": []
+      }
+    },
+    "new": {
+      "base": 180000,
+      "growth": [
+        { "salaryGrowth": 3, "bonusPercentage": 15 },
+        { "salaryGrowth": 3, "bonusPercentage": 15 },
+        { "salaryGrowth": 3, "bonusPercentage": 15 },
+        { "salaryGrowth": 3, "bonusPercentage": 15 }
+      ],
+      "company": {
+        "type": "private"
+      },
+      "equity": {
+        "type": "ISO",
+        "initialGrant": 300000,
+        "strikePrice": 5,
+        "currentFMV": 10,
+        "shares": 30000,
+        "vestingSchedule": [25, 50, 75, 100],
+        "refreshGrants": [],
+        "liquidityDiscount": 30,
+        "exitMultiple": 2
+      }
+    }
+  }
+}
