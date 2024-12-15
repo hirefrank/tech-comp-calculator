@@ -20,5 +20,6 @@ export interface CompPackage {
     shares?: number;
     liquidityDiscount?: number;
     exitMultiple?: number;
+    annualAppreciation?: number;
   };
 }

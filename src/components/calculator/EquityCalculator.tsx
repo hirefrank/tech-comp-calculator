@@ -2,9 +2,8 @@ import React from 'react';
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../../components/ui/select';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs';
-import { Switch } from '../../components/ui/switch';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import defaultConfig from '../../config/defaults.json';
 
@@ -27,41 +26,77 @@ export default function EquityCalculator({ package: pkg, onUpdate }: EquityCalcu
     });
   };
 
-  const calculateYearlyEquity = (year: number) => {
-    // Calculate vested equity
-    const vestedPercent = pkg.equity.vestingSchedule[year];
-    const vestedValue = pkg.equity.initialGrant * (vestedPercent / 100);
+  const handleCompanyChange = (type: 'public' | 'private') => {
+    if (type === 'public') {
+      // Reset private company fields when switching to public
+      onUpdate({
+        ...pkg,
+        company: { type },
+        equity: {
+          ...pkg.equity,
+          liquidityDiscount: undefined,
+          exitMultiple: undefined
+        }
+      });
+    } else {
+      // Set default values from config when switching to private
+      onUpdate({
+        ...pkg,
+        company: { type },
+        equity: {
+          ...pkg.equity,
+          liquidityDiscount: defaultConfig.company.defaultLiquidityDiscount,
+          exitMultiple: defaultConfig.company.defaultExitMultiple
+        }
+      });
+    }
+  };
 
-    // Add refresh grants for that year
+  const calculateTax = (totalValue: number) => {
+    // Calculate tax implications based on equity type
+    if (pkg.equity.type === 'RSU') {
+      return totalValue * ((taxRates.federal + taxRates.state) / 100);
+    } else if (pkg.equity.type === 'ISO' && pkg.equity.strikePrice && pkg.equity.shares) {
+      // AMT calculation for ISOs
+      const amtIncome = totalValue - (pkg.equity.shares * pkg.equity.strikePrice);
+      return Math.max(0, amtIncome * (taxRates.amt / 100));
+    } else if (pkg.equity.strikePrice && pkg.equity.shares) { // NSO
+      const spread = totalValue - (pkg.equity.shares * pkg.equity.strikePrice);
+      return spread * ((taxRates.federal + taxRates.state) / 100);
+    }
+    return 0;
+  };
+
+  const calculateYearlyEquity = (year: number) => {
+    // Calculate appreciation multiplier
+    const appreciationRate = pkg.equity.annualAppreciation || 0;
+    const appreciationMultiplier = Math.pow(1 + appreciationRate / 100, year);
+
+    // Calculate vested equity with appreciation
+    const vestedPercent = pkg.equity.vestingSchedule[year];
+    const vestedValue = pkg.equity.initialGrant * (vestedPercent / 100) * appreciationMultiplier;
+
+    // Calculate refresh grants with appreciation
     const refreshValue = pkg.equity.refreshGrants
       .filter(grant => grant.year === year + 1)
-      .reduce((sum, grant) => sum + grant.amount, 0);
+      .reduce((sum, grant) => {
+        const yearsAppreciated = year - (grant.year - 1);
+        const grantAppreciationMultiplier = Math.pow(1 + appreciationRate / 100, yearsAppreciated);
+        return sum + (grant.amount * grantAppreciationMultiplier);
+      }, 0);
 
     let totalValue = vestedValue + refreshValue;
 
     // Apply private company adjustments
-    if (pkg.company.type === 'private') {
+    if (pkg.company.type === 'private' && pkg.equity.liquidityDiscount && pkg.equity.exitMultiple) {
       totalValue *= (1 - pkg.equity.liquidityDiscount / 100);
       totalValue *= pkg.equity.exitMultiple;
     }
 
-    // Calculate tax implications
-    let taxAmount = 0;
-    if (pkg.equity.type === 'RSU') {
-      taxAmount = totalValue * ((taxRates.federal + taxRates.state) / 100);
-    } else if (pkg.equity.type === 'ISO') {
-      // AMT calculation for ISOs
-      const amtIncome = totalValue - (pkg.equity.shares * pkg.equity.strikePrice);
-      taxAmount = Math.max(0, amtIncome * (taxRates.amt / 100));
-    } else { // NSO
-      const spread = totalValue - (pkg.equity.shares * pkg.equity.strikePrice);
-      taxAmount = spread * ((taxRates.federal + taxRates.state) / 100);
-    }
-
     return {
       gross: totalValue,
-      tax: taxAmount,
-      net: totalValue - taxAmount
+      tax: calculateTax(totalValue),
+      net: totalValue - calculateTax(totalValue)
     };
   };
 
@@ -90,15 +125,31 @@ export default function EquityCalculator({ package: pkg, onUpdate }: EquityCalcu
           <TabsContent value="grant" className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
+                <label className="block text-sm font-medium mb-1">Company Type</label>
+                <Select
+                  value={pkg.company.type}
+                  onValueChange={handleCompanyChange}
+                >
+                  <SelectTrigger className="w-full h-9 px-3 py-2 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="min-w-[8rem] bg-white">
+                    <SelectItem value="public">Public</SelectItem>
+                    <SelectItem value="private">Private</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium mb-1">Equity Type</label>
                 <Select
                   value={pkg.equity.type}
                   onValueChange={(value) => handleEquityChange('type', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full h-9 px-3 py-2 text-sm">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="min-w-[8rem] bg-white">
                     <SelectItem value="RSU">RSUs</SelectItem>
                     <SelectItem value="ISO">ISOs</SelectItem>
                     <SelectItem value="NSO">NSOs</SelectItem>
@@ -119,7 +170,20 @@ export default function EquityCalculator({ package: pkg, onUpdate }: EquityCalcu
                 </div>
               </div>
 
-              {pkg.equity.type !== 'RSU' && (
+              <div>
+                <label className="block text-sm font-medium mb-1">Annual Appreciation (%)</label>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    value={pkg.equity.annualAppreciation || 0}
+                    onChange={(e) => handleEquityChange('annualAppreciation', Number(e.target.value))}
+                    className="pr-6"
+                  />
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
+                </div>
+              </div>
+
+              {(pkg.equity.type === 'ISO' || pkg.equity.type === 'NSO') && (
                 <>
                   <div>
                     <label className="block text-sm font-medium mb-1">Strike Price</label>
@@ -165,7 +229,7 @@ export default function EquityCalculator({ package: pkg, onUpdate }: EquityCalcu
                     <div className="relative">
                       <Input
                         type="number"
-                        value={pkg.equity.liquidityDiscount}
+                        value={pkg.equity.liquidityDiscount || 20}
                         onChange={(e) => handleEquityChange('liquidityDiscount', Number(e.target.value))}
                         className="pr-6"
                       />
@@ -178,7 +242,7 @@ export default function EquityCalculator({ package: pkg, onUpdate }: EquityCalcu
                     <div className="relative">
                       <Input
                         type="number"
-                        value={pkg.equity.exitMultiple}
+                        value={pkg.equity.exitMultiple || 1.0}
                         onChange={(e) => handleEquityChange('exitMultiple', Number(e.target.value))}
                         step="0.1"
                         className="pr-6"

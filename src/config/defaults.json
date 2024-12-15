@@ -1,10 +1,10 @@
 {
   "taxRates": {
-    "federal": 37,
-    "state": 13,
+    "federal": 35,
+    "state": 6.625,
     "amt": 28,
     "capitalGains": {
-      "shortTerm": 37,
+      "shortTerm": 35,
       "longTerm": 20
     }
   },
@@ -18,44 +18,43 @@
   },
   "packages": {
     "current": {
-      "base": 150000,
+      "base": 199800,
       "growth": [
-        { "salaryGrowth": 3, "bonusPercentage": 10 },
-        { "salaryGrowth": 3, "bonusPercentage": 10 },
-        { "salaryGrowth": 3, "bonusPercentage": 10 },
-        { "salaryGrowth": 3, "bonusPercentage": 10 }
+        { "salaryGrowth": 8, "bonusPercentage": 15 },
+        { "salaryGrowth": 5, "bonusPercentage": 15 },
+        { "salaryGrowth": 10, "bonusPercentage": 20 },
+        { "salaryGrowth": 5, "bonusPercentage": 20 }
       ],
       "company": {
         "type": "public"
       },
       "equity": {
         "type": "RSU",
-        "initialGrant": 200000,
-        "vestingSchedule": [25, 50, 75, 100],
-        "refreshGrants": []
+        "initialGrant": 8876,
+        "vestingSchedule": [50, 75, 100, 100],
+        "refreshGrants": [],
+        "annualAppreciation": 17
       }
     },
     "new": {
-      "base": 180000,
+      "base": 201000,
       "growth": [
-        { "salaryGrowth": 3, "bonusPercentage": 15 },
-        { "salaryGrowth": 3, "bonusPercentage": 15 },
-        { "salaryGrowth": 3, "bonusPercentage": 15 },
-        { "salaryGrowth": 3, "bonusPercentage": 15 }
+        { "salaryGrowth": 0, "bonusPercentage": 0 },
+        { "salaryGrowth": 3, "bonusPercentage": 10 },
+        { "salaryGrowth": 10, "bonusPercentage": 10 },
+        { "salaryGrowth": 3, "bonusPercentage": 10 }
       ],
       "company": {
         "type": "private"
       },
       "equity": {
-        "type": "ISO",
-        "initialGrant": 300000,
-        "strikePrice": 5,
-        "currentFMV": 10,
-        "shares": 30000,
+        "type": "RSU",
+        "initialGrant": 74750,
         "vestingSchedule": [25, 50, 75, 100],
         "refreshGrants": [],
-        "liquidityDiscount": 30,
-        "exitMultiple": 2
+        "annualAppreciation": 25,
+        "liquidityDiscount": 5,
+        "exitMultiple": 1.2
       }
     }
   }

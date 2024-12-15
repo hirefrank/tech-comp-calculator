@@ -23,15 +23,16 @@ export default function CompCalculator({ package: pkg, onUpdate, title }: CompCa
     });
   };
 
-  const calculateYearlyCompensation = (year: number) => {
-    let currentSalary = pkg.base;
-
-    // Calculate compounded salary up to this year
-    for (let i = 0; i < year; i++) {
+  const calculateSalaryForYear = (baseSalary: number, year: number) => {
+    let currentSalary = baseSalary;
+    for (let i = 0; i <= year; i++) {
       currentSalary *= (1 + pkg.growth[i].salaryGrowth / 100);
     }
+    return currentSalary;
+  };
 
-    // Calculate bonus based on that year's salary
+  const calculateYearlyCompensation = (year: number) => {
+    const currentSalary = calculateSalaryForYear(pkg.base, year);
     const bonus = currentSalary * (pkg.growth[year].bonusPercentage / 100);
 
     return {
@@ -76,12 +77,12 @@ export default function CompCalculator({ package: pkg, onUpdate, title }: CompCa
           <div>
             <h3 className="text-sm font-medium mb-4">Year by Year Growth</h3>
             <div className="space-y-4">
-              {pkg.growth.map((yearGrowth, year) => {
-                const yearlyComp = calculateYearlyCompensation(year);
+              {pkg.growth.map((yearGrowth, index) => {
+                const yearlyComp = calculateYearlyCompensation(index);
 
                 return (
-                  <div key={year} className="p-4 border rounded-lg space-y-4">
-                    <h4 className="font-medium">Year {year + 1}</h4>
+                  <div key={index} className="p-4 border rounded-lg space-y-4">
+                    <h4 className="font-medium">Year {index + 1}</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm mb-1">Salary Growth</label>
@@ -89,7 +90,7 @@ export default function CompCalculator({ package: pkg, onUpdate, title }: CompCa
                           <Input
                             type="number"
                             value={yearGrowth.salaryGrowth}
-                            onChange={(e) => handleGrowthChange(year, 'salaryGrowth', Number(e.target.value))}
+                            onChange={(e) => handleGrowthChange(index, 'salaryGrowth', Number(e.target.value))}
                             className="pr-6"
                           />
                           <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
@@ -101,7 +102,7 @@ export default function CompCalculator({ package: pkg, onUpdate, title }: CompCa
                           <Input
                             type="number"
                             value={yearGrowth.bonusPercentage}
-                            onChange={(e) => handleGrowthChange(year, 'bonusPercentage', Number(e.target.value))}
+                            onChange={(e) => handleGrowthChange(index, 'bonusPercentage', Number(e.target.value))}
                             className="pr-6"
                           />
                           <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
@@ -109,9 +110,9 @@ export default function CompCalculator({ package: pkg, onUpdate, title }: CompCa
                       </div>
                     </div>
                     <div className="text-sm text-gray-500">
-                      <div>Base Salary: ${yearlyComp.salary.toLocaleString()}</div>
-                      <div>Target Bonus: ${yearlyComp.bonus.toLocaleString()} ({yearGrowth.bonusPercentage}% of base)</div>
-                      <div className="font-medium">Total: ${yearlyComp.total.toLocaleString()}</div>
+                      <div>Base Salary: ${calculateSalaryForYear(pkg.base, index).toLocaleString()}</div>
+                      <div>Target Bonus: ${(calculateSalaryForYear(pkg.base, index) * (yearGrowth.bonusPercentage / 100)).toLocaleString()} ({yearGrowth.bonusPercentage}% of base)</div>
+                      <div className="font-medium">Total: ${(calculateSalaryForYear(pkg.base, index) * (1 + yearGrowth.bonusPercentage / 100)).toLocaleString()}</div>
                     </div>
                   </div>
                 );
