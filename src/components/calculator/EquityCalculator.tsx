@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
@@ -14,7 +14,14 @@ interface EquityCalculatorProps {
 const { taxRates: DEFAULT_TAX_RATES } = defaultConfig;
 
 export default function EquityCalculator({ package: pkg, onUpdate }: EquityCalculatorProps) {
-  const [taxRates, setTaxRates] = useState(DEFAULT_TAX_RATES);
+  const [taxRates, setTaxRates] = useState(() => {
+    const savedTaxRates = sessionStorage.getItem('taxRates');
+    return savedTaxRates ? JSON.parse(savedTaxRates) : DEFAULT_TAX_RATES;
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem('taxRates', JSON.stringify(taxRates));
+  }, [taxRates]);
 
   const handleEquityChange = (field: string, value: any) => {
     onUpdate({
@@ -107,6 +114,13 @@ export default function EquityCalculator({ package: pkg, onUpdate }: EquityCalcu
       ...values
     };
   });
+
+  useEffect(() => {
+    const savedPackage = sessionStorage.getItem('equityPackage');
+    if (savedPackage) {
+      onUpdate(JSON.parse(savedPackage));
+    }
+  }, [onUpdate]);
 
   return (
     <Card>

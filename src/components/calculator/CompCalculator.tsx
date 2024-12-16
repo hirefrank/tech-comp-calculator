@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../../components/ui/select';
@@ -11,6 +11,13 @@ interface CompCalculatorProps {
 }
 
 export default function CompCalculator({ package: pkg, onUpdate, title }: CompCalculatorProps) {
+  useEffect(() => {
+    const savedPackage = sessionStorage.getItem('compPackage');
+    if (savedPackage) {
+      onUpdate(JSON.parse(savedPackage));
+    }
+  }, [onUpdate]);
+
   const handleGrowthChange = (year: number, field: string, value: number) => {
     const newGrowth = [...pkg.growth];
     newGrowth[year] = {
@@ -49,6 +56,10 @@ export default function CompCalculator({ package: pkg, onUpdate, title }: CompCa
       ...comp
     };
   });
+
+  useEffect(() => {
+    sessionStorage.setItem('compPackage', JSON.stringify(pkg));
+  }, [pkg]);
 
   return (
     <Card>

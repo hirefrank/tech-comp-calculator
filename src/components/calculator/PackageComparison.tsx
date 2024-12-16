@@ -21,30 +21,36 @@ export default function PackageComparison() {
     setSearchParams({ tab });
   };
 
-  const [currentPackage, setCurrentPackage] = useState<CompPackage>({
-    ...config.packages.current,
-    company: {
-      ...config.packages.current.company,
-      type: config.packages.current.company.type || 'public'
-    },
-    equity: {
-      ...config.packages.current.equity,
-      liquidityDiscount: config.packages.current.equity.liquidityDiscount || 0,
-      exitMultiple: config.packages.current.equity.exitMultiple || 1.0
-    }
+  const [currentPackage, setCurrentPackage] = useState<CompPackage>(() => {
+    const savedCurrentPackage = sessionStorage.getItem('currentPackage');
+    return savedCurrentPackage ? JSON.parse(savedCurrentPackage) : {
+      ...config.packages.current,
+      company: {
+        ...config.packages.current.company,
+        type: config.packages.current.company.type || 'public'
+      },
+      equity: {
+        ...config.packages.current.equity,
+        liquidityDiscount: config.packages.current.equity.liquidityDiscount || 0,
+        exitMultiple: config.packages.current.equity.exitMultiple || 1.0
+      }
+    };
   });
 
-  const [newPackage, setNewPackage] = useState<CompPackage>({
-    ...config.packages.new,
-    company: {
-      ...config.packages.new.company,
-      type: config.packages.new.company.type || 'public'
-    },
-    equity: {
-      ...config.packages.new.equity,
-      liquidityDiscount: config.packages.new.equity.liquidityDiscount || 0,
-      exitMultiple: config.packages.new.equity.exitMultiple || 1.0
-    }
+  const [newPackage, setNewPackage] = useState<CompPackage>(() => {
+    const savedNewPackage = sessionStorage.getItem('newPackage');
+    return savedNewPackage ? JSON.parse(savedNewPackage) : {
+      ...config.packages.new,
+      company: {
+        ...config.packages.new.company,
+        type: config.packages.new.company.type || 'public'
+      },
+      equity: {
+        ...config.packages.new.equity,
+        liquidityDiscount: config.packages.new.equity.liquidityDiscount || 0,
+        exitMultiple: config.packages.new.equity.exitMultiple || 1.0
+      }
+    };
   });
 
   const applyRiskAdjustments = (rawEquityValue: number, pkg: CompPackage) => {
