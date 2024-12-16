@@ -30,7 +30,7 @@
       },
       "equity": {
         "type": "RSU",
-        "initialGrant": 8876,
+        "initialGrant": 30000,
         "vestingSchedule": [50, 75, 100, 100],
         "refreshGrants": [],
         "annualAppreciation": 17
